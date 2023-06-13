@@ -1,3 +1,3 @@
 export const environment = {
-  ENDPOINT: process.env['ENDPOINT'] ?? 'ws://localhost:4300',
+  ENDPOINT: 'wss://openlayers-test.vercel.app',
 };
