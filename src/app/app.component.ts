@@ -12,6 +12,7 @@ import VectorSource from 'ol/source/Vector';
 import Icon from 'ol/style/Icon';
 import Style from 'ol/style/Style';
 import { Subject } from 'rxjs';
+import { environment } from 'src/environment';
 
 interface Unit {
   id: string;
@@ -60,7 +61,7 @@ export class AppComponent implements OnInit {
   }
 
   private connectWS(): void {
-    const connectionWS = new WebSocket('ws://localhost:4300');
+    const connectionWS = new WebSocket(environment.ENDPOINT);
     connectionWS.onopen = () => console.log('client: connected');
     connectionWS.onmessage = (message) => {
       console.log('client: units received');
