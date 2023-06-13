@@ -1,3 +1,3 @@
 export const environment = {
-  ENDPOINT: 'wss://openlayers-test.vercel.app',
+  ENDPOINT: 'wss://openlayers-test-backend.vercel.app',
 };
