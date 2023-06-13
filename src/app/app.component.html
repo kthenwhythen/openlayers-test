@@ -1,27 +1,26 @@
 <main class="w-screen h-screen flex">
-  <table class="table-auto h-64 border border-slate-500 m-8 p-2">
+  <table
+    *ngIf="units$ | async as units"
+    class="table-auto h-64 border m-8 p-2 text-xs"
+  >
     <thead>
-      <tr>
-        <th>Song</th>
-        <th>Artist</th>
-        <th>Year</th>
+      <tr class="">
+        <th class="border p-2">Id</th>
+        <th class="border p-2">Type</th>
+        <th class="border p-2">Name</th>
+        <th class="border p-2">Position</th>
+        <th class="border p-2">Timestamp</th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>The Sliding Mr. Bones (Next Stop, Pottersville)</td>
-        <td>Malcolm Lockyer</td>
-        <td>1961</td>
-      </tr>
-      <tr>
-        <td>Witchy Woman</td>
-        <td>The Eagles</td>
-        <td>1972</td>
-      </tr>
-      <tr>
-        <td>Shining Star</td>
-        <td>Earth, Wind, and Fire</td>
-        <td>1975</td>
+      <tr *ngFor="let unit of units" class="border">
+        <th class="border p-2">{{ unit.id }}</th>
+        <th class="border p-2">{{ unit.type }}</th>
+        <th class="border p-2">{{ unit.name ? unit.name : unit.fio }}</th>
+        <th class="border p-2">
+          {{ unit.position[0] }} : {{ unit.position[1] }}
+        </th>
+        <th class="border p-2">{{ unit.timestamp | date : 'medium' }}</th>
       </tr>
     </tbody>
   </table>

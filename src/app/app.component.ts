@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import Feature from 'ol/Feature.js';
 import Map from 'ol/Map';
 import View from 'ol/View';
+import { Geometry } from 'ol/geom';
 import Point from 'ol/geom/Point';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
@@ -10,8 +11,7 @@ import OSM from 'ol/source/OSM';
 import VectorSource from 'ol/source/Vector';
 import Icon from 'ol/style/Icon';
 import Style from 'ol/style/Style';
-import { EMPTY, Subject } from 'rxjs';
-import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
+import { Subject } from 'rxjs';
 
 interface Unit {
   id: string;
@@ -24,42 +24,16 @@ interface Unit {
   position: [number, number];
 }
 
-const humanIcon = new Feature({
-  geometry: new Point([100, 0]),
-  name: 'Human',
-});
-const humanIconStyle = new Style({
-  image: new Icon({
-    src: 'assets/human.svg',
-    width: 24,
-    height: 24,
-  }),
-});
-humanIcon.setStyle(humanIconStyle);
-
-const vehicleIcon = new Feature({
-  geometry: new Point([0, 50]),
-  name: 'Vehicle',
-});
-const vehicleIconStyle = new Style({
-  image: new Icon({
-    src: 'assets/vehicle.svg',
-    width: 24,
-    height: 24,
-  }),
-});
-vehicleIcon.setStyle(vehicleIconStyle);
-
 @Component({
   standalone: true,
-  imports: [RouterModule],
+  imports: [CommonModule],
   selector: 'openlayers-test-root',
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
-  private units$ = new Subject<Unit[]>();
+  units$ = new Subject<Unit[]>();
   private vectorSource = new VectorSource();
-  private vectorLayer = new VectorLayer();
+  private vectorLayer = new VectorLayer({ source: this.vectorSource });
   private map = new Map({
     view: new View({
       // EPSG:4326 == WGS84
@@ -73,28 +47,16 @@ export class AppComponent implements OnInit {
       }),
       this.vectorLayer,
     ],
-    target: 'ol-map',
   });
 
   ngOnInit(): void {
-    this.vectorLayer.setSource(this.vectorSource);
+    this.setMapTarget();
     this.connectWS();
-    this.units$.subscribe((units) => {
-      units.forEach((unit) => {
-        const featureIcon = new Feature({
-          geometry: new Point([100, 0]),
-          name: 'Human',
-          style: new Style({
-            image: new Icon({
-              src: 'assets/human.svg',
-              width: 24,
-              height: 24,
-            }),
-          }),
-        });
-        this.vectorSource.addFeature(featureIcon);
-      });
-    });
+    this.subscribeToUnits();
+  }
+
+  private setMapTarget(): void {
+    this.map.setTarget('ol-map');
   }
 
   private connectWS(): void {
@@ -104,5 +66,72 @@ export class AppComponent implements OnInit {
       console.log('client: units received');
       this.units$.next(JSON.parse(message.data) as Unit[]);
     };
+  }
+
+  private createFeature(unit: Unit): Feature<Point> {
+    switch (unit.type) {
+      case 'human': {
+        return new Feature({
+          geometry: new Point([unit.position[0], unit.position[1]]),
+          name: unit.fio,
+          style: new Style({
+            image: new Icon({
+              src: 'assets/human.svg',
+              width: 24,
+              height: 24,
+            }),
+          }),
+        });
+      }
+
+      case 'vehicle': {
+        return new Feature({
+          geometry: new Point([unit.position[0], unit.position[1]]),
+          name: unit.name,
+          style: new Style({
+            image: new Icon({
+              src: 'assets/vehicle.svg',
+              width: 24,
+              height: 24,
+            }),
+          }),
+        });
+      }
+    }
+  }
+
+  private subscribeToUnits(): void {
+    this.units$.subscribe((units) => {
+      units.forEach((unit) => {
+        const currentFeature = this.vectorSource.getFeatureById(unit.id);
+
+        if (currentFeature) {
+          console.log('update positions');
+          this.setExistingFeaturePosition(
+            currentFeature,
+            unit.position[0],
+            unit.position[1]
+          );
+        } else {
+          console.log('create features');
+          this.createNewFeature(unit);
+        }
+        console.log(unit);
+      });
+    });
+  }
+
+  private setExistingFeaturePosition(
+    feature: Feature<Geometry>,
+    x: number,
+    y: number
+  ): void {
+    feature.setGeometry(new Point([x, y]));
+  }
+
+  private createNewFeature(unit: Unit): void {
+    const feature = this.createFeature(unit);
+    feature.setId(unit.id);
+    this.vectorSource.addFeature(feature);
   }
 }

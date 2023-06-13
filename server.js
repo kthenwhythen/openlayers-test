@@ -47,16 +47,18 @@ wss.on('connection', function connection(ws) {
       switch (unit.type) {
         case 'human':
           unit.position = [
-            unit.position[0] + Math.random() / 10,
-            unit.position[1] + Math.random() / 10,
+            unit.position[0] + (Math.random() - 0.5) * 2,
+            unit.position[1] + (Math.random() - 0.5) * 2,
           ];
+          unit.timestamp = Date.now();
           break;
 
         case 'vehicle':
           unit.position = [
-            unit.position[0] + Math.random(),
-            unit.position[1] + Math.random(),
+            unit.position[0] + (Math.random() - 0.5) * 2,
+            unit.position[1] + (Math.random() - 0.5) * 2,
           ];
+          unit.timestamp = Date.now();
           break;
       }
     });
