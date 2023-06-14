@@ -13,6 +13,7 @@ import Icon from 'ol/style/Icon';
 import Style from 'ol/style/Style';
 import { Subject } from 'rxjs';
 import { environment } from 'src/environment';
+import Text from 'ol/style/Text';
 
 interface Unit {
   id: string;
@@ -72,31 +73,39 @@ export class AppComponent implements OnInit {
   private createFeature(unit: Unit): Feature<Point> {
     switch (unit.type) {
       case 'human': {
-        return new Feature({
+        const feature = new Feature({
           geometry: new Point([unit.position[0], unit.position[1]]),
           name: unit.fio,
-          style: new Style({
+        });
+        feature.setStyle(
+          new Style({
             image: new Icon({
               src: 'assets/human.svg',
               width: 24,
               height: 24,
             }),
-          }),
-        });
+            text: new Text({ text: unit.fio, offsetY: 20 }),
+          })
+        );
+        return feature;
       }
 
       case 'vehicle': {
-        return new Feature({
+        const feature = new Feature({
           geometry: new Point([unit.position[0], unit.position[1]]),
           name: unit.name,
-          style: new Style({
+        });
+        feature.setStyle(
+          new Style({
             image: new Icon({
               src: 'assets/vehicle.svg',
               width: 24,
               height: 24,
             }),
-          }),
-        });
+            text: new Text({ text: unit.name, offsetY: 20 }),
+          })
+        );
+        return feature;
       }
     }
   }

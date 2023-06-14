@@ -58,6 +58,9 @@
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "port": 3000
+      },
       "configurations": {
         "production": {
           "browserTarget": "openlayers-test:build:production"
